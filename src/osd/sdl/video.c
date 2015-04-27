@@ -324,6 +324,35 @@ void sdl_osd_interface::update(bool skip_redraw)
 		debugger_update();
 }
 
+//============================================================
+//  OZFALCON - BELOW IS THE NEW SUB CALLED FROM emu/video.c. ONLY
+//  DIFFERENCE BETWEEN THIS SUB AND osd_update IS IT CALLS NEW SUB CALLED sdlwindow_video_window_update_hi
+//  INSTEAD OF sdlwindow_video_window_update (located in osd/sdl/window.c)
+//============================================================
+
+void sdl_osd_interface::update_hi(bool skip_redraw)
+{
+	sdl_window_info *window;
+
+	if (m_watchdog != NULL)
+		m_watchdog->reset();
+
+	// if we're not skipping this redraw, update all windows
+	if (!skip_redraw)
+	{
+//      profiler_mark(PROFILER_BLIT);
+		for (window = sdl_window_list; window != NULL; window = window->next)
+			window->video_window_update_hi(machine());
+//      profiler_mark(PROFILER_END);
+	}
+
+	// poll the joystick values here
+	sdlinput_poll(machine());
+	check_osd_inputs(machine());
+
+	if ((machine().debug_flags & DEBUG_FLAG_OSD_ENABLED) != 0)
+		debugger_update();
+}
 
 //============================================================
 //  add_primary_monitor

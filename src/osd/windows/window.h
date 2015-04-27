@@ -45,6 +45,9 @@ public:
 	int fullscreen() const { return m_fullscreen; }
 
 	void update();
+	
+	//MKCHAMP
+	void update_hi();
 
 	osd_monitor_info *winwindow_video_window_monitor(const osd_rect *proposed);
 

@@ -1056,6 +1056,63 @@ void sdl_window_info::update()
 	}
 }
 
+//============================================================
+//  OZFALCON - LAST OF THE NEW SUB CHAIN. FOR THOSE FOLLOWING, THE PATH IS:
+//  emu/ui.c->ui_set_startup_text CALLS emu/video.c->video_frame_update_hi WHICH CALLS
+//  osd/sdl/video.c->osd_update_hi WHICH CALLS THIS SUB. 
+//  THE ONLY DIFFERENCE BETWEEN THIS SUB AND sdlwindow_video_window_update IS IT DOES NOT
+//  perform PostMessage(window->hwnd, WM_USER_REDRAW, 0, (LPARAM)primlist) OR
+//  SendMessage(window->hwnd, WM_USER_REDRAW, 0, (LPARAM)primlist)
+//  ALL THIS DOES IS ALLOW MAME TO PROPERLY RUN TO CALCULATE THE REFRESHSPEED/ETC. WITHOUT
+//  GIVING THE WHITE BOX THAT SEEMS TO ANNOY SOME PEOPLE!
+//============================================================
+
+void sdl_window_info::video_window_update_hi(running_machine &machine)
+{
+	osd_ticks_t     event_wait_ticks;
+	ASSERT_MAIN_THREAD();
+
+	// adjust the cursor state
+	//sdlwindow_update_cursor_state(machine, window);
+
+	execute_async(&sdlwindow_update_cursor_state_wt, worker_param(machine, this));
+
+	// if we're visible and running and not in the middle of a resize, draw
+	if (target != NULL)
+	{
+		int tempwidth, tempheight;
+
+		// see if the games video mode has changed
+		target->compute_minimum_size(tempwidth, tempheight);
+		if (tempwidth != m_minwidth || tempheight != m_minheight)
+		{
+			m_minwidth = tempwidth;
+			m_minheight = tempheight;
+
+			if (!this->m_fullscreen)
+			{
+				blit_surface_size(width, height);
+				//Don't resize window without user interaction;
+				//window_resize(blitwidth, blitheight);
+			}
+			else if (video_config.switchres)
+			{
+				this->pick_best_mode(&tempwidth, &tempheight);
+				window_resize(tempwidth, tempheight);
+			}
+		}
+
+		if (video_config.waitvsync && video_config.syncrefresh)
+			event_wait_ticks = osd_ticks_per_second(); // block at most a second
+		else
+			event_wait_ticks = 0;
+
+		if (osd_event_wait(rendered_event, event_wait_ticks))
+		{
+			render_primitive_list &primlist = target->get_primitives();
+		}
+	}
+}
 
 //============================================================
 //  set_starting_view

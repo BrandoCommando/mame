@@ -64,6 +64,9 @@ public:
 
 	// video overridables
 	virtual void *get_slider_list() = 0; // FIXME: returns slider_state *
+	
+	//MKCHAMP - DECLARING THE NEW osd_update_hi SUB
+ 	virtual void update_hi(bool skip_redraw);
 
 	// font interface
 	virtual osd_font *font_alloc() = 0;

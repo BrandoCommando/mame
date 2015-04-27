@@ -535,7 +535,10 @@ static void verify_length_and_hash(romload_private *romdata, const char *name, U
 static void display_loading_rom_message(romload_private *romdata, const char *name, bool from_list)
 {
 	char buffer[200];
-
+	//MKCHAMP - DISABLING WHOLE SUB ROUTINE TO ELIMINATE LOADING MESSAGES
+ 	//REMOVING ALWAYS
+  //if (!options_get_bool(mame_options(), OPTION_DISABLE_LOADING_PATCH))
+  	return;
 	if (name != NULL)
 		sprintf(buffer, "Loading %s (%d%%)", from_list ? "Software" : emulator_info::get_capstartgamenoun(), (UINT32)(100 * (UINT64)romdata->romsloadedsize / (UINT64)romdata->romstotalsize));
 	else

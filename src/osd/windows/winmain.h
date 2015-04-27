@@ -261,6 +261,9 @@ private:
 	void osd_exit();
 	windows_options &m_options;
 
+ 	//MKChamp - Declaring hi subroutine
+ 	virtual void update_hi(bool skip_redraw);
+ 	
 	static const int DEFAULT_FONT_HEIGHT = 200;
 };
 
