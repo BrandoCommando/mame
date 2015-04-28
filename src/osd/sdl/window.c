@@ -1075,20 +1075,19 @@ void sdl_window_info::video_window_update_hi(running_machine &machine)
 	// adjust the cursor state
 	//sdlwindow_update_cursor_state(machine, window);
 
-	execute_async(&sdlwindow_update_cursor_state_wt, worker_param(machine, this));
+	execute_async(&update_cursor_state_wt, worker_param(this));
 
 	// if we're visible and running and not in the middle of a resize, draw
-	if (target != NULL)
+	if (m_target != NULL)
 	{
 		int tempwidth, tempheight;
-
+	
 		// see if the games video mode has changed
-		target->compute_minimum_size(tempwidth, tempheight);
-		if (tempwidth != m_minwidth || tempheight != m_minheight)
+		m_target->compute_minimum_size(tempwidth, tempheight);
+		if (osd_dim(tempwidth, tempheight) != m_minimum_dim)
 		{
-			m_minwidth = tempwidth;
-			m_minheight = tempheight;
-
+			m_minimum_dim = osd_dim(tempwidth, tempheight);
+		
 			if (!this->m_fullscreen)
 			{
 				blit_surface_size(width, height);
@@ -1097,19 +1096,23 @@ void sdl_window_info::video_window_update_hi(running_machine &machine)
 			}
 			else if (video_config.switchres)
 			{
-				this->pick_best_mode(&tempwidth, &tempheight);
-				window_resize(tempwidth, tempheight);
+				osd_dim tmp = this->pick_best_mode();
+				resize(tmp.width(), tmp.height());
 			}
 		}
-
+	
 		if (video_config.waitvsync && video_config.syncrefresh)
 			event_wait_ticks = osd_ticks_per_second(); // block at most a second
 		else
 			event_wait_ticks = 0;
-
-		if (osd_event_wait(rendered_event, event_wait_ticks))
+	
+		if (osd_event_wait(m_rendered_event, event_wait_ticks))
 		{
-			render_primitive_list &primlist = target->get_primitives();
+			render_primitive_list &primlist = *m_renderer->get_primitives();
+		
+			// and redraw now
+		
+			execute_async(&draw_video_contents_wt, worker_param(this, primlist));
 		}
 	}
 }

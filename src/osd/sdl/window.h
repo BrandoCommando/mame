@@ -73,7 +73,8 @@ public:
 	int window_init();
 
 	void update();
-	void toggle_full_screen();
+    void video_window_update_hi(running_machine &machine);
+    void toggle_full_screen();
 	void modify_prescale(int dir);
 	void resize(INT32 width, INT32 height);
 	void destroy();

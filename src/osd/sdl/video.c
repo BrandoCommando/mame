@@ -341,7 +341,7 @@ void sdl_osd_interface::update_hi(bool skip_redraw)
 	if (!skip_redraw)
 	{
 //      profiler_mark(PROFILER_BLIT);
-		for (window = sdl_window_list; window != NULL; window = window->next)
+		for (window = sdl_window_list; window != NULL; window = window->m_next)
 			window->video_window_update_hi(machine());
 //      profiler_mark(PROFILER_END);
 	}
